@@ -1,8 +1,11 @@
 mod cli;
-
+mod config;
+mod error;
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
+
+use crate::config::AppConfig;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -28,7 +31,8 @@ fn main() -> Result<()> {
             println!("rollback requested: app={app}, host={host}, generation={generation:?}");
         }
         Commands::InspectConfig { manifest } => {
-            println!("inspect-config requested for {}", manifest.display());
+            let cfg = AppConfig::load(&manifest)?;
+            println!("{}", serde_json::to_string_pretty(&cfg)?);
         }
     }
 

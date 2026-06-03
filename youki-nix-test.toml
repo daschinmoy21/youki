@@ -1,0 +1,13 @@
+name = "demo-app"
+
+[build]
+flake = "."
+target = "default"
+
+[container]
+command = ["{out}/bin/demo-app"]
+workdir = "/app"
+env = ["RUST_LOG=debug"]
+
+[deploy]
+hosts = ["server1"]
