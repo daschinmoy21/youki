@@ -24,3 +24,5 @@ tags.temp
 /tests/k8s/_out/
 replace_content.txt
 /e2e/k8s/_out/
+
+/experiment
