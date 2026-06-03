@@ -1,8 +1,8 @@
 name = "demo-app"
 
 [build]
-flake = "."
-target = "default"
+flake = "nixpkgs"
+target = "hello"
 
 [container]
 command = ["{out}/bin/demo-app"]

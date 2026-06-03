@@ -1,18 +1,21 @@
 mod cli;
 mod config;
 mod error;
+mod nix;
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
 
-use crate::config::AppConfig;
+use crate::{config::AppConfig, nix::build};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Build { flake } => {
-            println!("build requested for {flake}");
+        Commands::Build { flake: _flake } => {
+            let cfg = AppConfig::load(std::path::Path::new("youki-nix-test.toml"))?;
+            let result = build(&cfg)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Bundle { flake, out } => {
             println!("bundle requested for {flake} -> {}", out.display());

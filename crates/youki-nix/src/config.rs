@@ -1,6 +1,5 @@
-use std::fmt::format;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::{Context, Ok, Result};
 use serde::{Deserialize, Serialize};
@@ -49,13 +48,6 @@ impl AppConfig {
             .with_context(|| format!("Failed to parse manifest!{}", path.display()))?;
         cfg.validate()?;
         Ok(cfg)
-    }
-
-    pub fn manifest_dir(path: &Path) -> Result<PathBuf> {
-        let parent = path.parent().unwrap_or(Path::new("."));
-        parent
-            .canonicalize()
-            .with_context(|| format!("Failed to canonicalize manifest dir {}", parent.display()))
     }
 
     pub fn validate(&self) -> Result<()> {
