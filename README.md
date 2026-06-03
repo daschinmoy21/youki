@@ -94,6 +94,31 @@ We have [our roadmap](https://github.com/orgs/containers/projects/15).
 
 - [youki-dev/oci-spec-rs](https://github.com/youki-dev/oci-spec-rs) - OCI Runtime and Image Spec in Rust
 
+# 🧪 Experimental: youki-nix
+
+`youki-nix` is an experimental Nix-aware build and deployment crate that integrates Nix builds into the youki container workflow.
+
+## Progress
+
+- **Build** (`cargo run -p youki-nix build`) — fully implemented. Reads a TOML manifest, shells out to `nix build <flake>#<target> --print-out-paths`, and returns the store path as JSON.
+- **InspectConfig** (`cargo run -p youki-nix inspect-config`) — fully implemented. Loads and pretty-prints any TOML manifest.
+- **Bundle**, **Run**, **Deploy**, **Rollback** — command stubs only, not yet implemented.
+
+## Testing
+
+```bash
+# Build from the workspace root
+cargo build -p youki-nix
+
+# Inspect the test manifest
+cargo run -p youki-nix inspect-config --manifest youki-nix-test.toml
+
+# Run a Nix build (requires Nix with flakes enabled)
+cargo run -p youki-nix build
+```
+
+The test manifest `youki-nix-test.toml` is at the workspace root and references `nixpkgs#hello` by default.
+
 # 🎨 Design and implementation of youki
 
 The User and Developer Documentation for youki is hosted at [https://youki-dev.github.io/youki/](https://youki-dev.github.io/youki/)
