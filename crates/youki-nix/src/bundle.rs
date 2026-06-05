@@ -5,7 +5,8 @@ use std::{
 
 use anyhow::{Context, Ok, Result};
 use oci_spec::runtime::{
-    LinuxBuilder, MountBuilder, ProcessBuilder, RootBuilder, SpecBuilder,
+    LinuxBuilder, LinuxIdMappingBuilder, LinuxNamespaceBuilder, LinuxNamespaceType,
+    MountBuilder, ProcessBuilder, RootBuilder, SpecBuilder,
 };
 use serde::Serialize;
 
@@ -86,7 +87,45 @@ pub fn generate_bundle(
         .build()
         .context("failed to build /tmp mount")?;
 
+    let base_namespaces = [
+        LinuxNamespaceType::Pid,
+        LinuxNamespaceType::Network,
+        LinuxNamespaceType::Ipc,
+        LinuxNamespaceType::Uts,
+        LinuxNamespaceType::Mount,
+        LinuxNamespaceType::Cgroup,
+        LinuxNamespaceType::User,
+    ]
+    .iter()
+    .map(|typ| {
+        LinuxNamespaceBuilder::default()
+            .typ(typ.clone())
+            .build()
+    })
+    .collect::<std::result::Result<Vec<_>, _>>()
+    .context("failed to build namespaces")?;
+
+    let uid = unsafe { libc::geteuid() };
+    let gid = unsafe { libc::getegid() };
+
     let linux = LinuxBuilder::default()
+        .namespaces(base_namespaces)
+        .uid_mappings(vec![
+            LinuxIdMappingBuilder::default()
+                .host_id(uid)
+                .container_id(0_u32)
+                .size(1_u32)
+                .build()
+                .context("failed to build uid mapping")?,
+        ])
+        .gid_mappings(vec![
+            LinuxIdMappingBuilder::default()
+                .host_id(gid)
+                .container_id(0_u32)
+                .size(1_u32)
+                .build()
+                .context("failed to build gid mapping")?,
+        ])
         .build()
         .context("failed to build OCI linux section")?;
 

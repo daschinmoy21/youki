@@ -3,11 +3,12 @@ mod cli;
 mod config;
 mod error;
 mod nix;
-use std::path::Path;
+mod runtime;
 
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
+use std::path::Path;
 
 use crate::{config::AppConfig, nix::build};
 
@@ -28,8 +29,17 @@ fn main() -> Result<()> {
             let generated = bundle::generate_bundle(&cfg, &build, &closure, &out)?;
             println!("{}", serde_json::to_string_pretty(&generated)?);
         }
-        Commands::Run { flake } => {
-            println!("run requested for {flake}");
+        Commands::Run { flake: _ } => {
+            let cfg = AppConfig::load(Path::new("youki-nix-test.toml"))?;
+            let build = nix::build(&cfg)?;
+            let closure = nix::closure(&build)?;
+            let out = Path::new("./dist/run-bundle");
+            let generated = bundle::generate_bundle(&cfg, &build, &closure, out)?;
+            let status = runtime::run_bundle(&cfg, &generated)?;
+
+            if !status.success() {
+                anyhow::bail!("youki run failed with status {status}");
+            }
         }
         Commands::Deploy { host } => {
             println!("deploy requested for {host}");
