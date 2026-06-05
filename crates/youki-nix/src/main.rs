@@ -1,7 +1,10 @@
+mod bundle;
 mod cli;
 mod config;
 mod error;
 mod nix;
+use std::path::Path;
+
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
@@ -19,6 +22,11 @@ fn main() -> Result<()> {
         }
         Commands::Bundle { flake, out } => {
             println!("bundle requested for {flake} -> {}", out.display());
+            let cfg = AppConfig::load(Path::new("youki-nix-test.toml"))?;
+            let build = nix::build(&cfg)?;
+            let closure = nix::closure(&build)?;
+            let generated = bundle::generate_bundle(&cfg, &build, &closure, &out)?;
+            println!("{}", serde_json::to_string_pretty(&generated)?);
         }
         Commands::Run { flake } => {
             println!("run requested for {flake}");
